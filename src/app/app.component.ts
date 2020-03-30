@@ -35,10 +35,15 @@ export class AppComponent implements OnInit, OnDestroy {
     this.fetchPosts();
   }
 
+  onErrorOk() {
+    this.errorMsg = null;
+  }
+
   onClearPosts() {
     // Send Http request
     if (confirm("Are you sure to clear posts ?")) {
       this.postSvc.clearPosts().subscribe((responseData) => {
+        console.log(responseData);
         this.loadedPosts = [];
       }
       );
@@ -54,6 +59,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.isFetching = false;
       this.loadedPosts = data;
     }, error => {
+      this.isFetching = false;
       console.log(error);
       this.errorMsg = error.error.error;
     });

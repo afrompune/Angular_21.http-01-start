@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams, HttpEventType } from '@angular/common/http';
 import { PostType } from './PostType.model';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, tap } from 'rxjs/operators';
 import { Subject, throwError } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -17,14 +17,25 @@ export class PostService {
         return this.http
             .post<{ name: string }>(
                 'https://test-dae5f.firebaseio.com/posts.json',
-                postData
+                postData,
+                {
+                    headers: new HttpHeaders({ 'Custom-Header': 'Hello' }),
+                    params: new HttpParams().set('print', 'pretty'),
+                    observe: 'response'
+                }
             );
     }
 
     fetchPosts() {
         return this.http
             .get<{ [key: string]: PostType }>(
-                'https://test-dae5f.firebaseio.com/posts.json')
+                'https://test-dae5f.firebaseio.com/posts.json',
+                {
+                    headers: new HttpHeaders({ 'Custom-Header': 'Hello' }),
+                    params: new HttpParams().set('print', 'pretty').set('print1', 'pretty'),
+                    responseType: 'json'
+                }
+            )
             .pipe(map((responseData) => {
                 const postsArray: PostType[] = [];
 
@@ -42,6 +53,15 @@ export class PostService {
     }
 
     clearPosts() {
-        return this.http.delete('https://test-dae5f.firebaseio.com/posts.json');
+        return this.http.delete('https://test-dae5f.firebaseio.com/posts.json',
+            {
+                //observe: 'response'
+                observe: 'events',
+                responseType: 'json'
+            }
+        ).pipe(tap((event) => {
+            if (event.type === HttpEventType.Sent)
+                console.log(event);
+        }));
     }
 }
